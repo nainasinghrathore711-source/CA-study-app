@@ -1,51 +1,58 @@
-// Standalone stand-in for Claude's window.storage API, backed by localStorage.
-// NOTE: "shared" storage here is still just this browser's localStorage —
-// it will NOT sync between different people's devices. To make the Live Room
-// work across real users, swap this file for calls to a real backend
-// (e.g. Supabase) using the same get/set/delete/list method signatures.
+// Real cross-device storage backed by Supabase, matching the same
+// get/set/delete/list API the app already uses.
 
-const PREFIX = "ca-study";
-const ns = (shared) => `${PREFIX}:${shared ? "shared" : "personal"}:`;
+import { createClient } from "@supabase/supabase-js";
+
+const SUPABASE_URL = "https://ceqcvumhabpsfdpvxxxg.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_BCF8EMfMCffCa1X7KUlqYQ_54Usi3tX";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function install() {
   window.storage = {
     async get(key, shared = false) {
-      try {
-        const raw = localStorage.getItem(ns(shared) + key);
-        if (raw === null) throw new Error("not found");
-        return { key, value: raw, shared };
-      } catch (e) {
-        throw e;
-      }
+      const { data, error } = await supabase
+        .from("kv_store")
+        .select("v")
+        .eq("k", key)
+        .eq("shared", shared)
+        .maybeSingle();
+      if (error || !data) throw new Error("not found");
+      return { key, value: data.v, shared };
     },
+
     async set(key, value, shared = false) {
-      try {
-        localStorage.setItem(ns(shared) + key, value);
-        return { key, value, shared };
-      } catch (e) {
+      const { error } = await supabase
+        .from("kv_store")
+        .upsert(
+          { k: key, v: value, shared, updated_at: new Date().toISOString() },
+          { onConflict: "k" }
+        );
+      if (error) {
+        console.error("storage.set error:", error.message);
         return null;
       }
+      return { key, value, shared };
     },
+
     async delete(key, shared = false) {
-      try {
-        localStorage.removeItem(ns(shared) + key);
-        return { key, deleted: true, shared };
-      } catch (e) {
-        return null;
-      }
+      const { error } = await supabase
+        .from("kv_store")
+        .delete()
+        .eq("k", key)
+        .eq("shared", shared);
+      if (error) return null;
+      return { key, deleted: true, shared };
     },
+
     async list(prefix = "", shared = false) {
-      try {
-        const full = ns(shared) + prefix;
-        const keys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.startsWith(full)) keys.push(k.slice(ns(shared).length));
-        }
-        return { keys, prefix, shared };
-      } catch (e) {
-        return null;
-      }
+      const { data, error } = await supabase
+        .from("kv_store")
+        .select("k")
+        .eq("shared", shared)
+        .like("k", `${prefix}%`);
+      if (error) return null;
+      return { keys: (data || []).map((r) => r.k), prefix, shared };
     },
   };
 }
