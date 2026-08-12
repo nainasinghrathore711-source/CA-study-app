@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Heart, Star, Sparkles, Plus, Timer, LogOut, ChevronLeft, Users, BookOpen, Trash2, Check } from "lucide-react";
-import { supabase } from "./storage.js";
 
 // ---------- Font injection ----------
 const FontStyles = () => (
@@ -41,15 +40,15 @@ const chList = (subjectKey, names) =>
 const TEMPLATES = {
   final: {
     FR: { label: "Financial Reporting", short: "FR", color: "#E2879A", emoji: "🌸",
-      chapters: ["Introduction to Ind AS & Schedule III","Conceptual Framework for Financial Reporting under Ind AS","Ind AS 1 – Presentation of Financial Statements","Ind AS 2 – Inventories","Ind AS 7 – Statement of Cash Flow","Ind AS 8 – Accounting Policies, Changes in Accounting Estimates & Errors","Ind AS 10 – Events After the Reporting Period","Ind AS 12 – Income Taxes","Ind AS 16 – Property, Plant & Equipment","Ind AS 19 – Employee Benefits","Ind AS 20 – Government Grants & Disclosure of Government Assistance","Ind AS 21 – Effects of Changes in Foreign Exchange Rates","Ind AS 23 – Borrowing Costs","Ind AS 24 – Related Party Disclosures","Ind AS 33 – Earnings Per Share","Ind AS 34 – Interim Financial Reporting","Ind AS 36 – Impairment of Assets","Ind AS 37 – Provisions, Contingent Liabilities & Contingent Assets","Ind AS 38 – Intangible Assets","Ind AS 40 – Investment Property","Ind AS 41 – Agriculture","Ind AS 101 – First Time Adoption of Ind AS","Ind AS 105 – Non-Current Assets Held for Sale & Discontinued Operations","Ind AS 108 – Operating Segments","Ind AS 113 – Fair Value Measurement","Ind AS 115 – Revenue from Contracts with Customers","Ind AS 116 – Leases","Ind AS 102 – Share Based Payments","Ind AS 103 – Business Combinations","Ind AS 110/27/112 – Consolidated & Separate Financial Statements","Ind AS 111 – Joint Arrangements","Ind AS 28 – Investments in Associates & Joint Ventures","Ind AS 32, 107, 109 – Financial Instruments","Professional & Ethical Duty of a Chartered Accountant","Accounting & Technology"] },
+      chapters: ["Framework for Preparation of Financial Statements","Presentation & Disclosures (Ind AS)","Measurement Based on Accounting Policies","Ind AS 115 – Revenue from Contracts","Ind AS on Assets","Ind AS on Liabilities","Ind AS on Items Impacting Financial Statements","Disclosures in Financial Statements","Financial Instruments","Business Combinations & Corporate Restructuring","Consolidated Financial Statements","Analysis of Financial Statements","Integrated Reporting","Corporate Social Responsibility"] },
     AFM: { label: "Advanced Financial Management", short: "AFM", color: "#8FAE7D", emoji: "🍵",
-      chapters: ["Financial Policy and Corporate Strategy","Risk Management","Advanced Capital Budgeting Decisions","Security Analysis","Security Valuation","Portfolio Management","Securitization","Mutual Funds","Derivatives Analysis and Valuation","Foreign Exchange Exposure and Risk Management","International Financial Management","Interest Rate Risk Management","Business Valuation","Mergers, Acquisitions and Corporate Restructuring","Startup Finance"] },
+      chapters: ["Financial Policy & Corporate Strategy","Advanced Capital Budgeting","Security Analysis","Security Valuation","Portfolio Management","Securitization","Mutual Funds","Derivatives Analysis & Valuation","Forex Exposure & Risk Management","International Financial Management","Interest Rate Risk Management","Business Valuation","Mergers, Acquisitions & Restructuring","Startup Finance"] },
     AUDIT: { label: "Advanced Auditing & Professional Ethics", short: "Audit", color: "#C9A6D9", emoji: "🎀",
-      chapters: ["Basics of Audit (SA 200, Audit Procedures, SA 210/230)","SQC-1 + Standards on Auditing (200–700 Series)","Professional Ethics","CARO 2020","Company Audit","Audit Planning","Risk Assessment & Internal Control","Group Audit","Bank Audit","NBFC Audit","PSU Audit","Internal Audit","SA 610 – Using the Work of Internal Auditors","Due Diligence","Forensic Accounting","Investigation","SA 800 Series","SRE – Standards on Review Engagements","SAE – Standards on Assurance Engagements","SRS – Standards on Related Services","SDG & ESG Assurance","Digital Audit"] },
+      chapters: ["Quality Control & Engagement Standards","Audit Planning, Strategy & Execution","Materiality, Risk & Internal Control","Audit Evidence","Completion & Review","Reporting","Specialised Areas","Related Services","Review of Financial Information","Prospective Financial Information","Digital Auditing & Data Analytics","Group Audits","Audit of Banks & NBFCs","Audit of Public Sector Undertakings","Internal Audit","Due Diligence, Investigation & Forensic Accounting","Peer Review & Quality Review","Professional Ethics & Liabilities"] },
     DT: { label: "Direct Tax Laws & International Taxation", short: "DT", color: "#F0B15C", emoji: "⭐",
-      chapters: ["Basics, Tax Rates AY 26-27 & Alternate Taxation Regime","Income from Capital Gains","Income from Other Sources","Taxation of Dividend & Deemed Dividend","Taxation in Case of Liquidation & Buy Back","Taxation in Case of Amalgamation and Demerger","Profits & Gains of Business or Profession","Income Computation & Disclosure Standards (ICDS)","Taxation of Political Parties & Electoral Trust","Taxation in Case of Firm/LLP","Taxation in Case of AOP/BOI","Taxation of Business Trust","Taxation of Investment Fund","Taxation of Securitisation Trust","Minimum Alternate Tax","Alternate Minimum Tax","Deduction u/s 10AA (SEZ)","Deduction under Chapter VI-A","Clubbing of Income","Set-Off & Carry Forward of Losses","Advance Tax, TDS & TCS","Assessment Procedure","Appeals & Revisions","Dispute Resolution Committee","Miscellaneous Provisions","Penalties & Prosecutions","The Black Money Act, 2015","GAAR","Taxation of VDA","Exempt Income","Tonnage Taxation","Taxation of Trust & Institutions","Tax Audit & Ethical Compliance","Transfer Pricing","Non-Resident & NRI Taxation","Double Taxation Relief (DTAA)","Advance Ruling (BOAR)","Model Tax Conventions (MTC)","Application & Interpretation of Tax Treaties","Base Erosion & Profit Shifting (BEPS)","Latest Developments in International Taxation","Foreign Tax Credit Rule","Conversion of Foreign Income into Indian Currency","Remaining Case Laws & Concepts"] },
+      chapters: ["Taxation of Individuals & HUF (Advanced)","Taxation of Firms, LLP & AOP/BOI","Taxation of Companies","Assessment of Various Entities","Business Restructuring","Charitable & Religious Trusts, NGOs","Tax Planning, Avoidance & Evasion","Deduction, Collection & Recovery of Tax","ICDS","Return of Income & Assessment Procedures","Appeals, Revisions & Settlement","Penalties & Offences","Double Taxation Relief","Transfer Pricing","Non-Resident Taxation","Model Tax Conventions","Application & Interpretation of Tax Treaties","Fundamentals of BEPS","GAAR","Taxation of E-Commerce Transactions"] },
     IDT: { label: "Indirect Tax Laws", short: "IDT", color: "#8FB8D9", emoji: "💫",
-      chapters: ["Basics – GST Introduction","Supply under GST","Charge of GST","Exemptions from GST","Place of Supply","Time of Supply","Value of Supply","Input Tax Credit","Registration","Tax Invoice, Credit Notes & Debit Notes","Demand & Recovery","Assessment & Audit","Inspection, Search, Seizure & Arrest","Appeals & Revisions","Offences & Penalties","Advance Ruling","Payment of Tax; TDS & TCS","Liability to Pay in Certain Cases","Refunds (GST)","Returns under GST","Accounts & Records; E-Way Bill","Job Work","Miscellaneous Provisions (GST)","Ethical Aspects under GST","Customs – Basic Provisions","Customs – Levy & Exemptions","Customs – Types of Duty","Customs – Import Export Procedure","Customs – Valuation under the Customs Act, 1962","Customs – Baggage","Customs – Warehousing","Customs – Refunds","Foreign Trade Policy 2023"] },
+      chapters: ["Supply under GST","Charge of GST","Place of Supply","Exemptions from GST","Time of Supply","Value of Supply","Input Tax Credit","Registration","Tax Invoice, Credit & Debit Notes","Accounts, Records & E-way Bill","Payment of Tax","Returns","Import & Export under GST","Refunds","Job Work","Assessment & Audit","Inspection, Search, Seizure & Arrest","Demand & Recovery","Liability in Certain Cases","Offences & Penalties","Appeals & Revision","Advance Ruling","Miscellaneous Provisions","Customs – Levy & Exemptions","Customs – Types of Duty","Classification & Valuation under Customs","Import & Export Procedures","Duty Drawback","Foreign Trade Policy"] },
     IBS: { label: "Integrated Business Solutions", short: "IBS", color: "#E8A87C", emoji: "✨",
       chapters: ["Strategic Management Integration","Financial Management Integration","Risk Management & Case Analysis","Multidisciplinary Case Studies – Practice Sets"] },
   },
@@ -134,9 +133,9 @@ const Stamp = ({ checked, onClick, label, color }) => {
 
 export default function App() {
   const [view, setView] = useState("loading"); // loading, auth, home, subjects, chapter, room
-  const [uid, setUid] = useState(null); // supabase user id — used for storage keys
-  const [name, setName] = useState(""); // display name shown in the app
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [name, setName] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [knownProfiles, setKnownProfiles] = useState([]);
   const [level, setLevel] = useState(null); // final | inter
   const [profile, setProfile] = useState(null); // {final:{}, inter:{}}
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -144,7 +143,6 @@ export default function App() {
   const [streak, setStreak] = useState({ count: 0, lastDate: null });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [authLoading, setAuthLoading] = useState(false);
 
   // Study room state
   const [sessionSeconds, setSessionSeconds] = useState(0);
@@ -154,93 +152,64 @@ export default function App() {
   const pingRef = useRef(null);
   const pollRef = useRef(null);
 
-  const loadProfileData = useCallback(async (id) => {
+  // -------- Boot: list known local profiles --------
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await window.storage.list("profile:", false);
+        const names = (res?.keys || []).map((k) => k.replace("profile:", ""));
+        setKnownProfiles(names);
+      } catch (e) {
+        // no profiles yet
+      }
+      setView("auth");
+    })();
+  }, []);
+
+  const loadProfileData = useCallback(async (n) => {
     try {
-      const res = await window.storage.get(`profile:${id}`, false);
+      const res = await window.storage.get(`profile:${n}`, false);
       if (res?.value) return JSON.parse(res.value);
     } catch (e) {}
     return { final: {}, inter: {} };
   }, []);
 
-  const loadStreak = useCallback(async (id) => {
+  const loadStreak = useCallback(async (n) => {
     try {
-      const res = await window.storage.get(`streak:${id}`, false);
+      const res = await window.storage.get(`streak:${n}`, false);
       if (res?.value) return JSON.parse(res.value);
     } catch (e) {}
     return { count: 0, lastDate: null };
   }, []);
 
-  const enterAppForUser = useCallback(async (user) => {
-    const displayName =
-      user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Friend";
-    setUid(user.id);
-    setName(displayName);
-    setAvatarUrl(user.user_metadata?.avatar_url || null);
-    const [p, s] = await Promise.all([loadProfileData(user.id), loadStreak(user.id)]);
-    setProfile(p);
-    setStreak(s);
-    setView("home");
-  }, [loadProfileData, loadStreak]);
-
-  // -------- Boot: check for an existing Google session --------
-  useEffect(() => {
-    let unsub;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        await enterAppForUser(data.session.user);
-      } else {
-        setView("auth");
-      }
-      const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          await enterAppForUser(session.user);
-        } else if (event === "SIGNED_OUT") {
-          setUid(null);
-          setName("");
-          setProfile(null);
-          setView("auth");
-        }
-      });
-      unsub = () => listener?.subscription?.unsubscribe();
-    })();
-    return () => unsub && unsub();
-  }, [enterAppForUser]);
-
-  const saveProfile = async (id, p) => {
+  const saveProfile = async (n, p) => {
     setSaving(true);
     try {
-      await window.storage.set(`profile:${id}`, JSON.stringify(p), false);
+      await window.storage.set(`profile:${n}`, JSON.stringify(p), false);
     } catch (e) {
       setError("Couldn't save just now — check your connection and try again.");
     }
     setSaving(false);
   };
 
-  const saveStreak = async (id, s) => {
+  const saveStreak = async (n, s) => {
     try {
-      await window.storage.set(`streak:${id}`, JSON.stringify(s), false);
+      await window.storage.set(`streak:${n}`, JSON.stringify(s), false);
     } catch (e) {}
   };
 
-  const handleGoogleSignIn = async () => {
-    setAuthLoading(true);
-    setError(null);
-    const { error: err } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
-    if (err) {
-      setError("Couldn't start Google sign-in — try again.");
-      setAuthLoading(false);
-    }
-    // On success, the browser redirects to Google and back; boot effect picks up the session.
+  const handleSignIn = async (n) => {
+    const clean = n.trim();
+    if (!clean) return;
+    setName(clean);
+    const [p, s] = await Promise.all([loadProfileData(clean), loadStreak(clean)]);
+    setProfile(p);
+    setStreak(s);
+    setView("home");
   };
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     stopSession();
-    await supabase.auth.signOut();
-    setUid(null);
     setName("");
     setProfile(null);
     setLevel(null);
@@ -270,7 +239,7 @@ export default function App() {
         c.id === chapterId ? { ...c, [field]: !c[field] } : c
       );
       const next = { ...prev, [level]: { ...prev[level], [subjKey]: { ...subj, chapters } } };
-      saveProfile(uid, next);
+      saveProfile(name, next);
       return next;
     });
   };
@@ -279,7 +248,7 @@ export default function App() {
     setProfile((prev) => {
       const subj = prev[level][subjKey];
       const next = { ...prev, [level]: { ...prev[level], [subjKey]: { ...subj, mock: !subj.mock } } };
-      saveProfile(uid, next);
+      saveProfile(name, next);
       return next;
     });
   };
@@ -291,7 +260,7 @@ export default function App() {
       const subj = prev[level][subjKey];
       const newCh = { id: `${subjKey}-custom-${Date.now()}`, name: trimmed, lecture: false, rev1: false, rev2: false, custom: true };
       const next = { ...prev, [level]: { ...prev[level], [subjKey]: { ...subj, chapters: [...subj.chapters, newCh] } } };
-      saveProfile(uid, next);
+      saveProfile(name, next);
       return next;
     });
     setNewChapterInput("");
@@ -302,7 +271,7 @@ export default function App() {
       const subj = prev[level][subjKey];
       const chapters = subj.chapters.filter((c) => c.id !== chapterId);
       const next = { ...prev, [level]: { ...prev[level], [subjKey]: { ...subj, chapters } } };
-      saveProfile(uid, next);
+      saveProfile(name, next);
       return next;
     });
   };
@@ -314,7 +283,7 @@ export default function App() {
     const isConsecutive = streak.lastDate === yesterdayStr();
     const next = { count: isConsecutive ? streak.count + 1 : 1, lastDate: today };
     setStreak(next);
-    await saveStreak(uid, next);
+    await saveStreak(name, next);
   };
 
   const pollActive = useCallback(async () => {
@@ -344,7 +313,7 @@ export default function App() {
     const ping = async () => {
       try {
         await window.storage.set(
-          `room:${uid}`,
+          `room:${name}`,
           JSON.stringify({ name, ts: Date.now(), sessionStart }),
           true
         );
@@ -363,7 +332,7 @@ export default function App() {
     clearInterval(pingRef.current);
     clearInterval(pollRef.current);
     try {
-      if (uid) await window.storage.delete(`room:${uid}`, true);
+      if (name) await window.storage.delete(`room:${name}`, true);
     } catch (e) {}
   };
 
@@ -373,4 +342,66 @@ export default function App() {
   const bgStyle = {
     background: `linear-gradient(160deg, ${C.paper} 0%, #FDF3F5 55%, #F3F8ED 100%)`,
     minHeight: "100vh",
-    color:
+    color: C.ink,
+  };
+
+  if (view === "loading") {
+    return (
+      <div style={bgStyle} className="flex items-center justify-center">
+        <FontStyles />
+        <p className="font-body text-sm" style={{ color: C.inkSoft }}>Opening the register…</p>
+      </div>
+    );
+  }
+
+  // ---- AUTH ----
+  if (view === "auth") {
+    return (
+      <div style={bgStyle} className="min-h-screen flex flex-col items-center justify-center px-6 font-body relative overflow-hidden">
+        <FontStyles />
+        <Star size={18} color={C.blushDeep} fill={C.blush} className="floaty absolute top-10 left-8" style={{ "--r": "-10deg" }} />
+        <Heart size={16} color={C.blushDeep} fill={C.blush} className="floaty absolute top-24 right-10" style={{ animationDelay: "1s", "--r": "8deg" }} />
+        <Sparkles size={20} color={C.matchaDeep} className="floaty absolute bottom-24 left-10" style={{ animationDelay: "2s" }} />
+        <Star size={14} color={C.matchaDeep} fill={C.matcha} className="floaty absolute bottom-16 right-12" style={{ animationDelay: "0.5s", "--r": "12deg" }} />
+
+        <div className="w-full max-w-sm relative">
+          <div className="text-center mb-10">
+            <p className="text-xs tracking-[0.3em] uppercase mb-3 flex items-center justify-center gap-1.5" style={{ color: C.matchaDeep }}>
+              <Sparkles size={12} /> study with me <Sparkles size={12} />
+            </p>
+            <h1 className="font-display text-4xl leading-tight" style={{ color: C.ink }}>
+              your cozy<br />reading room 🍵
+            </h1>
+            <p className="text-sm mt-3" style={{ color: C.inkSoft }}>
+              chapters, revisions, mocks — and a little room that keeps you consistent
+            </p>
+          </div>
+
+          <div className="rounded-3xl p-6" style={{ background: "#FFFDFA", border: `1.5px solid ${C.line}`, boxShadow: `0 8px 24px -12px ${C.blush}` }}>
+            <label className="text-xs uppercase tracking-wide font-medium block mb-2" style={{ color: C.inkSoft }}>
+              your name 💌
+            </label>
+            <input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSignIn(nameInput)}
+              placeholder="e.g. Naina"
+              className="w-full px-4 py-2.5 rounded-full outline-none font-body text-base"
+              style={{ border: `1.5px solid ${C.line}`, background: C.paper, color: C.ink }}
+            />
+            <button
+              onClick={() => handleSignIn(nameInput)}
+              className="w-full mt-3 py-2.5 rounded-full font-medium text-sm transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5"
+              style={{ background: `linear-gradient(90deg, ${C.blushDeep}, ${C.matchaDeep})`, color: "#fff" }}
+            >
+              enter <Heart size={13} fill="#fff" />
+            </button>
+            <p className="text-[11px] mt-3 leading-snug text-center" style={{ color: C.inkSoft }}>
+              no password — just a name, so this device remembers your progress. anyone on this page can join the study room ✨
+            </p>
+          </div>
+
+          {knownProfiles.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs uppercase tracking-wide mb-2" style={{ color: C.inkSoft }}>continue as</p>
+              <div className="flex 
